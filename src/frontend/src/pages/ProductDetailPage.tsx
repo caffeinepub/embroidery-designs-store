@@ -1,6 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Download, Loader2, ShoppingCart } from "lucide-react";
-import { motion } from "motion/react";
+import {
+  ChevronRight,
+  Download,
+  Loader2,
+  Minus,
+  Plus,
+  ShoppingCart,
+  X,
+  ZoomIn,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { useActor } from "../hooks/useActor";
@@ -10,10 +20,123 @@ function productId(name: string) {
   return name.toLowerCase().replace(/\s+/g, "-");
 }
 
+function ImageLightbox({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const zoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoom((z) => Math.min(z + 0.25, 3));
+  };
+  const zoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoom((z) => Math.max(z - 0.25, 0.5));
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
+      onClick={onClose}
+      data-ocid="product.modal"
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-md" />
+
+      {/* Close button */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-5 right-5 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-[oklch(0.15_0_0)] border border-[oklch(0.25_0_0)] text-[oklch(0.75_0_0)] hover:text-gold hover:border-gold transition-all duration-200"
+        data-ocid="product.close_button"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      {/* Zoom controls */}
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 bg-[oklch(0.13_0_0)] border border-[oklch(0.22_0_0)] rounded-full px-4 py-2"
+        onClickCapture={(e) => e.stopPropagation()}
+        role="presentation"
+      >
+        <button
+          type="button"
+          onClick={zoomOut}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[oklch(0.2_0_0)] text-[oklch(0.75_0_0)] hover:text-gold transition-all"
+          data-ocid="product.secondary_button"
+        >
+          <Minus className="w-4 h-4" />
+        </button>
+        <span className="font-cinzel text-xs tracking-widest text-gold min-w-[3rem] text-center">
+          {Math.round(zoom * 100)}%
+        </span>
+        <button
+          type="button"
+          onClick={zoomIn}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[oklch(0.2_0_0)] text-[oklch(0.75_0_0)] hover:text-gold transition-all"
+          data-ocid="product.primary_button"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Image */}
+      <motion.div
+        className="relative z-10 flex items-center justify-center"
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.85, opacity: 0 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        onClickCapture={(e) => e.stopPropagation()}
+        role="presentation"
+        style={{ maxWidth: "90vw", maxHeight: "90vh" }}
+      >
+        <div
+          className="border border-[oklch(var(--gold-border))] rounded-sm overflow-hidden shadow-[0_0_60px_oklch(0.69_0.13_75_/_0.2)]"
+          style={{ overflow: "auto", maxWidth: "90vw", maxHeight: "82vh" }}
+        >
+          <img
+            src={src}
+            alt={alt}
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: "center",
+              transition: "transform 0.3s ease",
+              display: "block",
+              maxWidth: "90vw",
+              maxHeight: "82vh",
+              objectFit: "contain",
+            }}
+          />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function ProductDetailPage({ id }: { id: string }) {
   const { navigate } = useRouter();
   const { addItem } = useCart();
   const { actor, isFetching } = useActor();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const productsQuery = useQuery({
     queryKey: ["products"],
@@ -74,6 +197,16 @@ export default function ProductDetailPage({ id }: { id: string }) {
 
   return (
     <div className="min-h-screen bg-background pt-20">
+      <AnimatePresence>
+        {lightboxOpen && (
+          <ImageLightbox
+            src={product.imageUrl}
+            alt={product.name}
+            onClose={() => setLightboxOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Breadcrumb */}
       <motion.div
         className="bg-[oklch(0.11_0_0)] border-b border-[oklch(0.19_0_0)] py-4"
@@ -106,15 +239,23 @@ export default function ProductDetailPage({ id }: { id: string }) {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div
-              className="overflow-hidden"
+              className="overflow-hidden relative cursor-pointer group"
               whileHover={{ scale: 1.03 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
+              onClick={() => setLightboxOpen(true)}
+              data-ocid="product.canvas_target"
             >
               <img
                 src={product.imageUrl}
                 alt={product.name}
                 className="w-full aspect-square object-cover"
               />
+              {/* Zoom overlay on hover */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100 w-14 h-14 rounded-full bg-[oklch(0.1_0_0)]/80 border border-gold flex items-center justify-center shadow-[0_0_20px_oklch(0.69_0.13_75_/_0.4)]">
+                  <ZoomIn className="w-6 h-6 text-gold" />
+                </div>
+              </div>
             </motion.div>
           </motion.div>
 
