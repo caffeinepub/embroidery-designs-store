@@ -30,6 +30,10 @@ import {
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Toaster } from "sonner";
 import { CartProvider, useCart } from "./context/CartContext";
+import {
+  SiteSettingsProvider,
+  useSiteSettings,
+} from "./context/SiteSettingsContext";
 import { useActor } from "./hooks/useActor";
 const AdminPage = React.lazy(() => import("./pages/AdminPage"));
 const CartPage = React.lazy(() => import("./pages/CartPage"));
@@ -495,6 +499,7 @@ function Navbar() {
 
 function Hero() {
   const { navigate } = useRouter();
+  const { heroText } = useSiteSettings();
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -551,7 +556,10 @@ function Hero() {
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            Premium Embroidery
+            {heroText
+              .split(" ")
+              .slice(0, Math.ceil(heroText.split(" ").length / 2))
+              .join(" ")}
           </motion.span>
           <motion.span
             className="block"
@@ -563,8 +571,10 @@ function Hero() {
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <span className="gradient-gold-text">Designs</span> for
-            Professionals
+            {heroText
+              .split(" ")
+              .slice(Math.ceil(heroText.split(" ").length / 2))
+              .join(" ")}
           </motion.span>
         </h1>
 
@@ -1059,6 +1069,7 @@ function Newsletter() {
 
 function Footer() {
   const year = new Date().getFullYear();
+  const { whatsappNumber } = useSiteSettings();
 
   const quickLinks = [
     { label: "Home", href: "/" },
@@ -1155,12 +1166,12 @@ function Footer() {
               <li>Mon &ndash; Sat: 9am &ndash; 6pm</li>
               <li className="pt-2">
                 <a
-                  href="https://wa.me/919914902647"
+                  href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gold hover:underline font-cinzel text-xs tracking-widest uppercase"
                 >
-                  WhatsApp: +91 9914902647
+                  WhatsApp: {whatsappNumber}
                 </a>
               </li>
               <li className="pt-2">
@@ -1205,6 +1216,7 @@ function HomePage() {
 
 function AppRouter() {
   const { path } = useRouter();
+  const { whatsappNumber } = useSiteSettings();
 
   const getProductId = () => {
     const match = path.match(/^\/product\/(.+)$/);
@@ -1268,7 +1280,7 @@ function AppRouter() {
       <Footer />
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/919914902647"
+        href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:bg-[#20BD5B] hover:shadow-[0_6px_30px_rgba(37,211,102,0.6)] transition-all duration-300 hover:scale-110 active:scale-95"
@@ -1296,7 +1308,9 @@ export default function App() {
   return (
     <RouterProvider>
       <CartProvider>
-        <AppRouter />
+        <SiteSettingsProvider>
+          <AppRouter />
+        </SiteSettingsProvider>
       </CartProvider>
     </RouterProvider>
   );
