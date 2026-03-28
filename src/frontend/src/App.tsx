@@ -511,10 +511,20 @@ function Hero() {
       <motion.div className="absolute inset-0" style={{ y: bgY }}>
         <img
           src="/assets/generated/hero-embroidery.dim_1400x800.jpg"
+          loading="eager"
           alt="Premium embroidery designs"
           className="w-full h-full object-cover scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.08_0_0/0.75)] via-[oklch(0.08_0_0/0.6)] to-[oklch(0.08_0_0/0.95)]" />
+        {/* Main overlay — reduced opacity so the hero image breathes */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.08_0_0/0.35)] via-[oklch(0.08_0_0/0.18)] to-[oklch(0.08_0_0/0.92)]" />
+        {/* Radial vignette for cinematic depth */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, transparent 30%, oklch(0.05 0 0 / 0.7) 100%)",
+          }}
+        />
       </motion.div>
 
       <FloatingParticles />
@@ -530,16 +540,33 @@ function Hero() {
           </p>
         </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 40, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="font-cinzel text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider text-foreground leading-tight mb-6"
-        >
-          Premium Embroidery
-          <br />
-          <span className="gradient-gold-text">Designs</span> for Professionals
-        </motion.h1>
+        <h1 className="font-cinzel text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider text-foreground leading-tight mb-6">
+          <motion.span
+            className="block"
+            initial={{ opacity: 0, y: 50, skewY: 2 }}
+            animate={{ opacity: 1, y: 0, skewY: 0 }}
+            transition={{
+              duration: 0.9,
+              delay: 0.35,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            Premium Embroidery
+          </motion.span>
+          <motion.span
+            className="block"
+            initial={{ opacity: 0, y: 50, skewY: 2 }}
+            animate={{ opacity: 1, y: 0, skewY: 0 }}
+            transition={{
+              duration: 0.9,
+              delay: 0.52,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <span className="gradient-gold-text">Designs</span> for
+            Professionals
+          </motion.span>
+        </h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -560,9 +587,10 @@ function Hero() {
         >
           <MagneticButton
             onClick={() => navigate("/shop")}
-            className="group relative px-10 py-4 bg-gold text-[oklch(0.08_0_0)] font-cinzel text-sm font-bold tracking-widest uppercase rounded-sm hover:bg-[oklch(var(--gold-highlight))] transition-all duration-300 hover:shadow-[0_0_30px_oklch(0.69_0.13_75/0.5)]"
+            className="group relative px-10 py-4 bg-gold text-[oklch(0.08_0_0)] font-cinzel text-sm font-bold tracking-widest uppercase rounded-sm hover:bg-[oklch(var(--gold-highlight))] transition-all duration-300 glow-ring"
           >
-            Shop Now
+            <span className="relative z-10">Shop Now</span>
+            <span className="absolute inset-0 rounded-sm bg-gradient-to-r from-[oklch(0.62_0.13_72)] to-[oklch(0.78_0.11_80)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </MagneticButton>
           <MagneticButton
             onClick={() => navigate("/how-it-works")}
@@ -752,33 +780,37 @@ function BestSellers() {
                 }}
               >
                 <TiltCard
-                  className="group border border-[oklch(0.19_0_0)] bg-[oklch(0.13_0_0)] rounded-sm overflow-hidden hover:border-gold hover:shadow-[0_8px_40px_oklch(0.69_0.13_75/0.2)] transition-colors duration-300 cursor-pointer h-full"
+                  className="group border border-[oklch(0.19_0_0)] bg-[oklch(0.13_0_0)] rounded-sm overflow-hidden shadow-[0_2px_16px_oklch(0_0_0/0.4)] hover:border-gold hover:shadow-[0_12px_48px_oklch(0.69_0.13_75/0.25)] transition-all duration-400 cursor-pointer h-full"
                   onClick={() => navigate(`/product/product-${i}`)}
                 >
                   <div className="relative overflow-hidden aspect-square">
                     <img
                       src={product.imageUrl}
                       alt={product.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      style={{ willChange: "transform" }}
                     />
+                    {/* Permanent bottom gradient for legibility */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0_0/0.75)] via-[oklch(0.08_0_0/0.15)] to-transparent" />
+                    {/* Gold top border reveal on hover */}
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                     <div className="absolute top-3 left-3">
                       <span className="font-cinzel text-[10px] tracking-widest bg-gold text-[oklch(0.08_0_0)] px-2 py-1 uppercase">
                         {product.category}
                       </span>
                     </div>
-                    {/* Shimmer overlay */}
-                    <motion.div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[oklch(0.85_0.1_80/0.08)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
 
-                  <div className="p-4">
-                    <h3 className="font-cinzel text-sm font-semibold tracking-wide text-foreground mb-2">
+                  <div className="p-5">
+                    <h3 className="font-cinzel text-sm font-semibold tracking-wide text-foreground mb-1.5">
                       {product.name}
                     </h3>
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-4">
                       <StarRating rating={5} />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="font-cinzel text-lg font-bold text-gold">
+                      <span className="font-cinzel text-xl font-bold text-gold">
                         {product.priceUsd}
                       </span>
                       <motion.button
@@ -795,9 +827,9 @@ function BestSellers() {
                             description: product.description,
                           });
                         }}
-                        whileHover={{ scale: 1.08 }}
+                        whileHover={{ scale: 1.06 }}
                         whileTap={{ scale: 0.95 }}
-                        className="font-cinzel text-[10px] tracking-widest uppercase px-3 py-2 bg-gold text-[oklch(0.08_0_0)] hover:bg-[oklch(var(--gold-highlight))] transition-colors duration-200 rounded-sm"
+                        className="font-cinzel text-[10px] tracking-widest uppercase px-4 py-2.5 bg-gold text-[oklch(0.08_0_0)] hover:bg-[oklch(var(--gold-highlight))] transition-colors duration-200 rounded-sm shadow-[0_2px_12px_oklch(0.69_0.13_75/0.3)]"
                       >
                         Add to Cart
                       </motion.button>
@@ -1119,7 +1151,7 @@ function Footer() {
               Contact
             </h4>
             <ul className="space-y-3 text-[oklch(var(--text-muted))] text-sm">
-              <li>support@embroiderydesigns.com</li>
+              <li>embroiderybusiness77@gmail.com</li>
               <li>Mon &ndash; Sat: 9am &ndash; 6pm</li>
               <li className="pt-2">
                 <a
@@ -1234,6 +1266,25 @@ function AppRouter() {
         </motion.div>
       </AnimatePresence>
       <Footer />
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/919914902647"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(37,211,102,0.4)] hover:bg-[#20BD5B] hover:shadow-[0_6px_30px_rgba(37,211,102,0.6)] transition-all duration-300 hover:scale-110 active:scale-95"
+        style={{ willChange: "transform" }}
+      >
+        <span className="sr-only">Chat on WhatsApp</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="white"
+          className="w-7 h-7"
+          aria-hidden="true"
+        >
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+      </a>
       <Toaster richColors position="bottom-right" theme="dark" />
     </div>
   );

@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Search, ShoppingCart } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import { motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -56,12 +56,28 @@ function TiltCard({
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.03 }}
       transition={{ scale: { type: "spring", stiffness: 300, damping: 20 } }}
       onClick={onClick}
     >
       {children}
     </motion.div>
+  );
+}
+
+function SkeletonCard() {
+  return (
+    <div className="border border-[oklch(0.19_0_0)] bg-[oklch(0.13_0_0)] rounded-sm overflow-hidden">
+      <div className="skeleton aspect-square w-full" />
+      <div className="p-4 space-y-3">
+        <div className="skeleton h-4 w-3/4" />
+        <div className="skeleton h-3 w-1/2" />
+        <div className="flex items-center justify-between mt-4">
+          <div className="skeleton h-6 w-16" />
+          <div className="skeleton h-8 w-20 rounded-sm" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -156,16 +172,23 @@ export default function ShopPage() {
           </div>
         </motion.div>
 
-        {/* Loading */}
+        {/* Skeleton Loading */}
         {isLoading && (
-          <motion.div
-            className="flex justify-center items-center py-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
             data-ocid="shop.loading_state"
           >
-            <Loader2 className="w-8 h-8 text-gold animate-spin" />
-          </motion.div>
+            {["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"].map((id) => (
+              <motion.div
+                key={id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <SkeletonCard />
+              </motion.div>
+            ))}
+          </div>
         )}
 
         {/* Empty */}
@@ -201,31 +224,36 @@ export default function ShopPage() {
                   }}
                 >
                   <TiltCard
-                    className="group border border-[oklch(0.19_0_0)] bg-[oklch(0.13_0_0)] rounded-sm overflow-hidden hover:border-gold hover:shadow-[0_8px_40px_oklch(0.69_0.13_75/0.15)] transition-colors duration-300 cursor-pointer h-full"
+                    className="group border border-[oklch(0.19_0_0)] bg-[oklch(0.13_0_0)] rounded-sm overflow-hidden shadow-[0_2px_16px_oklch(0_0_0/0.4)] hover:border-gold hover:shadow-[0_12px_48px_oklch(0.69_0.13_75/0.25)] transition-all duration-400 cursor-pointer h-full"
                     onClick={() => navigate(`/product/${pid}`)}
                   >
                     <div className="relative overflow-hidden aspect-square">
                       <img
                         src={product.imageUrl}
                         alt={product.name}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        style={{ willChange: "transform" }}
                       />
+                      {/* Permanent bottom gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0_0/0.75)] via-[oklch(0.08_0_0/0.15)] to-transparent" />
+                      {/* Gold top-border reveal on hover */}
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                       <div className="absolute top-3 left-3">
                         <span className="font-cinzel text-[10px] tracking-widest bg-gold text-[oklch(0.08_0_0)] px-2 py-1 uppercase">
                           {product.category}
                         </span>
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0_0/0.6)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-cinzel text-sm font-semibold tracking-wide text-foreground mb-2">
+                    <div className="p-5">
+                      <h3 className="font-cinzel text-sm font-semibold tracking-wide text-foreground mb-1.5">
                         {product.name}
                       </h3>
-                      <p className="text-[oklch(var(--text-muted))] text-xs mb-3 line-clamp-2">
+                      <p className="text-[oklch(var(--text-muted))] text-xs mb-4 line-clamp-2">
                         {product.formats}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="font-cinzel text-lg font-bold text-gold">
+                        <span className="font-cinzel text-xl font-bold text-gold">
                           {product.priceUsd}
                         </span>
                         <motion.button
@@ -235,9 +263,9 @@ export default function ShopPage() {
                             addItem({ ...product, id: pid });
                             toast.success(`${product.name} added to cart`);
                           }}
-                          whileHover={{ scale: 1.1 }}
+                          whileHover={{ scale: 1.06 }}
                           whileTap={{ scale: 0.92 }}
-                          className="flex items-center gap-1.5 font-cinzel text-[10px] tracking-widest uppercase px-3 py-2 bg-gold text-[oklch(0.08_0_0)] hover:bg-[oklch(var(--gold-highlight))] transition-colors rounded-sm"
+                          className="flex items-center gap-1.5 font-cinzel text-[10px] tracking-widest uppercase px-4 py-2.5 bg-gold text-[oklch(0.08_0_0)] hover:bg-[oklch(var(--gold-highlight))] transition-colors rounded-sm shadow-[0_2px_12px_oklch(0.69_0.13_75/0.3)]"
                         >
                           <ShoppingCart className="w-3 h-3" />
                           Add
